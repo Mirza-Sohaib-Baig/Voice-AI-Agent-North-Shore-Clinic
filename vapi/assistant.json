@@ -1,0 +1,176 @@
+{
+  "name": "Northshore Intake Coordinator",
+  "firstMessage": "Hi, you've reached Northshore Family Clinic, this is Maya in patient intake. Are you a new patient, or do you already have a chart with us?",
+  "model": {
+    "provider": "openai",
+    "model": "gpt-4o",
+    "temperature": 0.4,
+    "fallbackModels": ["gpt-4o-mini"]
+  },
+  "voice": {
+    "provider": "11labs",
+    "voiceId": "21m00Tcm4TlvDq8ikWAM",
+    "stability": 0.5,
+    "similarityBoost": 0.75
+  },
+  "transcriber": {
+    "provider": "deepgram",
+    "model": "nova-2",
+    "language": "en",
+            "smartFormat": true,
+    "endpointing": 250
+  },
+  "serverMessages": [
+    "tool-calls",
+    "end-of-call-report",
+    "status-update",
+    "hang",
+    "transcript"
+  ],
+  "endCallPhrases": [
+    "have a good day. goodbye",
+    "have a good day, goodbye",
+    "ok goodbye",
+    "okay goodbye",
+    "goodbye"
+  ],
+  "silenceTimeoutSeconds": 30,
+  "maxDurationSeconds": 900,
+  "backgroundSound": "off",
+  "startSpeakingPlan": {
+    "waitSeconds": 0.4,
+    "smartEndpointingEnabled": true
+  },
+  "stopSpeakingPlan": {
+    "numWords": 2,
+    "voiceSeconds": 0.2,
+    "backoffSeconds": 1.0
+  },
+  "tools": [
+    {
+      "function": {
+        "name": "lookup_patient_by_phone",
+        "description": "Look up an existing chart. Prefer phone_number (caller ID or the number they registered with). If they have no phone, pass last_name and date_of_birth together. Call on the existing-chart path, and on the new-patient path as soon as you have a 10-digit callback number.",
+        "parameters": {
+          "type": "object",
+          "properties": {
+            "phone_number": {
+              "type": "string",
+              "description": "US phone number, digits or spoken form"
+            },
+            "last_name": {
+              "type": "string",
+              "description": "Use with date_of_birth when phone is unknown"
+            },
+            "date_of_birth": {
+              "type": "string",
+              "description": "MM/DD/YYYY or a spoken date; use with last_name when phone is unknown"
+            }
+          }
+        }
+      },
+      "messages": [
+        { "type": "request-start", "content": "Let me check whether we already have you on file." },
+        { "type": "request-failed", "content": "I had trouble looking that up. Let's continue with registration." }
+      ]
+    },
+    {
+      "function": {
+        "name": "save_patient_registration",
+        "description": "Persist a confirmed new patient. Call ONLY after the caller confirms the full read-back. Omit empty optional fields.",
+        "parameters": {
+          "type": "object",
+          "properties": {
+            "first_name": { "type": "string" },
+            "last_name": { "type": "string" },
+            "date_of_birth": { "type": "string", "description": "MM/DD/YYYY" },
+            "sex": { "type": "string", "enum": ["Male", "Female", "Other", "Decline to Answer"] },
+            "phone_number": { "type": "string" },
+            "email": { "type": "string" },
+            "address_line_1": { "type": "string" },
+            "address_line_2": { "type": "string" },
+            "city": { "type": "string" },
+            "state": { "type": "string", "description": "2-letter US state" },
+            "zip_code": { "type": "string" },
+            "insurance_provider": { "type": "string" },
+            "insurance_member_id": { "type": "string" },
+            "preferred_language": { "type": "string" },
+            "emergency_contact_name": { "type": "string" },
+            "emergency_contact_phone": { "type": "string" },
+            "source_call_id": { "type": "string" }
+          },
+          "required": [
+            "first_name",
+            "last_name",
+            "date_of_birth",
+            "sex",
+            "phone_number",
+            "address_line_1",
+            "city",
+            "state",
+            "zip_code"
+          ]
+        }
+      },
+      "messages": [
+        { "type": "request-start", "content": "Saving your registration now." },
+        { "type": "request-failed", "content": "I'm having trouble saving that. Let me try once more." }
+      ]
+    },
+    {
+      "function": {
+        "name": "update_patient_record",
+        "description": "Partial update of an existing patient. Include patient_id from lookup plus only the fields that changed.",
+        "parameters": {
+          "type": "object",
+          "properties": {
+            "patient_id": { "type": "string" },
+            "first_name": { "type": "string" },
+            "last_name": { "type": "string" },
+            "date_of_birth": { "type": "string" },
+            "sex": { "type": "string" },
+            "phone_number": { "type": "string" },
+            "email": { "type": "string" },
+            "address_line_1": { "type": "string" },
+            "address_line_2": { "type": "string" },
+            "city": { "type": "string" },
+            "state": { "type": "string" },
+            "zip_code": { "type": "string" },
+            "insurance_provider": { "type": "string" },
+            "insurance_member_id": { "type": "string" },
+            "preferred_language": { "type": "string" },
+            "emergency_contact_name": { "type": "string" },
+            "emergency_contact_phone": { "type": "string" }
+          },
+          "required": ["patient_id"]
+        }
+      },
+      "messages": [
+        { "type": "request-start", "content": "I'll update your record." }
+      ]
+    },
+    {
+      "function": {
+        "name": "schedule_appointment",
+        "description": "Offer mock first-appointment slots after a successful registration. Does not book a real calendar.",
+        "parameters": {
+          "type": "object",
+          "properties": {
+            "patient_id": { "type": "string" },
+            "preferred_window": { "type": "string", "description": "Morning, afternoon, a weekday, etc." }
+          }
+        }
+      },
+      "messages": [
+        { "type": "request-start", "content": "Let me check the next available new-patient slots." }
+      ]
+    },
+    {
+      "type": "endCall",
+      "function": {
+        "name": "endCall",
+        "description": "Hang up immediately after a farewell. Call this as soon as the conversation is finished; do not wait for the caller to hang up."
+      }
+    }
+  ]
+}
