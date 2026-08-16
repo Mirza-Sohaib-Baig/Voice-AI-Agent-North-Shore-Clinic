@@ -10,14 +10,15 @@
   "voice": {
     "provider": "11labs",
     "voiceId": "21m00Tcm4TlvDq8ikWAM",
+    "model": "eleven_multilingual_v2",
     "stability": 0.5,
     "similarityBoost": 0.75
   },
   "transcriber": {
     "provider": "deepgram",
-    "model": "nova-2",
-    "language": "en",
-            "smartFormat": true,
+    "model": "nova-3",
+    "language": "multi",
+    "smartFormat": true,
     "endpointing": 250
   },
   "serverMessages": [
@@ -29,10 +30,17 @@
   ],
   "endCallPhrases": [
     "have a good day. goodbye",
-    "have a good day, goodbye",
     "ok goodbye",
     "okay goodbye",
-    "goodbye"
+    "goodbye",
+    "que tenga un buen dia. adios",
+    "adios",
+    "hasta luego",
+    "aapka din shubh ho. alvida",
+    "alvida",
+    "aap ka din achha rahe. allah hafiz",
+    "khuda hafiz",
+    "allah hafiz"
   ],
   "silenceTimeoutSeconds": 30,
   "maxDurationSeconds": 900,
