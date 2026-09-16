@@ -21,6 +21,4 @@ htmlcov/
 Thumbs.db
 alembic/versions/__pycache__/
 .python-version
-tests/
-docs/
-scripts/
+docs/setup/
