@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Patient Registration — Dashboard</title>
+  <style>
+    :root { font-family: "Segoe UI", system-ui, sans-serif; color: #0f172a; background: #f8fafc; }
+    body { margin: 0; padding: 24px; }
+    h1 { font-size: 1.4rem; margin: 0 0 4px; }
+    p.sub { color: #64748b; margin: 0 0 24px; }
+    table { width: 100%; border-collapse: collapse; background: white; border-radius: 8px; overflow: hidden; box-shadow: 0 1px 3px rgb(15 23 42 / 8%); margin-bottom: 32px; }
+    th, td { text-align: left; padding: 10px 12px; border-bottom: 1px solid #e2e8f0; font-size: 0.9rem; }
+    th { background: #0f766e; color: white; font-weight: 600; }
+    tr:last-child td { border-bottom: none; }
+    code { font-size: 0.8rem; }
+    .tag { display: inline-block; padding: 2px 8px; border-radius: 999px; background: #ccfbf1; color: #115e59; font-size: 0.75rem; }
+    section h2 { font-size: 1.1rem; margin-bottom: 8px; }
+  </style>
+</head>
+<body>
+  <h1>Patient registration</h1>
+  <p class="sub">Read-only view of the same Postgres the voice agent writes to. Demo data is fictional.</p>
+
+  <section>
+    <h2>Patients ({{ patients|length }})</h2>
+    <table>
+      <thead>
+        <tr>
+          <th>Name</th>
+          <th>DOB</th>
+          <th>Sex</th>
+          <th>Phone</th>
+          <th>City, ST</th>
+          <th>ZIP</th>
+          <th>Language</th>
+          <th>ID</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for p in patients %}
+        <tr>
+          <td>{{ p.last_name }}, {{ p.first_name }}</td>
+          <td>{{ p.date_of_birth }}</td>
+          <td>{{ p.sex.value if p.sex.value is defined else p.sex }}</td>
+          <td>{{ p.phone_number }}</td>
+          <td>{{ p.city }}, {{ p.state }}</td>
+          <td>{{ p.zip_code }}</td>
+          <td>{{ p.preferred_language }}</td>
+          <td><code>{{ p.patient_id }}</code></td>
+        </tr>
+        {% else %}
+        <tr><td colspan="8">No patients yet.</td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </section>
+
+  <section>
+    <h2>Recent calls</h2>
+    <table>
+      <thead>
+        <tr>
+          <th>When</th>
+          <th>From</th>
+          <th>Outcome</th>
+          <th>Call ID</th>
+          <th>Ended</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for c in calls %}
+        <tr>
+          <td>{{ c.created_at }}</td>
+          <td>{{ c.from_number or "—" }}</td>
+          <td><span class="tag">{{ c.outcome.value if c.outcome.value is defined else c.outcome }}</span></td>
+          <td><code>{{ c.vapi_call_id }}</code></td>
+          <td>{{ c.ended_reason or "—" }}</td>
+        </tr>
+        {% else %}
+        <tr><td colspan="5">No call logs yet. Place a Vapi inbound call to populate this.</td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </section>
+</body>
+</html>
