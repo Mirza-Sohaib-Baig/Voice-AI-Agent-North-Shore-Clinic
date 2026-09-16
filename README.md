@@ -8,8 +8,6 @@ Fictional data only. Not HIPAA-compliant. Do not enter real patient information.
 
 ## Live demo
 
-Paste these before submitting. `{API}` is the origin below, with no trailing slash.
-
 | | |
 | --- | --- |
 | Phone number | `+1 (551) 233 0188` |
